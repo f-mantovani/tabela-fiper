@@ -1,11 +1,13 @@
 package com.felipe.TabelaFipe.main;
 
 
-import com.felipe.TabelaFipe.model.Brand;
+import com.felipe.TabelaFipe.model.Data;
+import com.felipe.TabelaFipe.model.Model;
+import com.felipe.TabelaFipe.model.Vehicle;
 import com.felipe.TabelaFipe.service.ConsumeApi;
 import com.felipe.TabelaFipe.service.ConvertData;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
@@ -52,21 +54,45 @@ public class Main {
             return;
         }
 
-
-
-        List<Brand> brands = data.convertList(json, Brand.class);
-        List<Brand> ordered = brands.stream().sorted(Comparator.comparing(Brand::code)).toList();
-
+        List<Data> brands = data.convertList(json, Data.class);
         System.out.println("Showing " + toShow + " - choose typing the code from the brand");
-        ordered.forEach(b -> {
-            System.out.printf("%d - %s %n", b.code(), b.name());
-        });
+        brands.stream()
+                .sorted(Comparator.comparing(Data::codeAsInt))
+                .forEach(System.out::print);
 
         int codeOption = reader.nextInt();
         reader.nextLine();
 
-        json = consume.getData(address + codeOption + "/modelos");
-        System.out.println(json);
+        address = address + codeOption + "/modelos/";
+        json = consume.getData(address);
+        Model modelsList = data.convert(json, Model.class);
+        modelsList.models().stream()
+                .sorted(Comparator.comparing(Data::codeAsInt))
+                .forEach(System.out::print);
+
+
+        int modelOption = reader.nextInt();
+        reader.nextLine();
+
+        List<Data> found = modelsList.models().stream()
+                .filter(m -> Integer.parseInt(m.code()) == modelOption)
+                .toList();
+
+
+
+        address = address + found.get(0).code() + "/anos/";
+        json = consume.getData(address);
+        List<Data> years = data.convertList(json, Data.class);
+
+        ArrayList<Vehicle> vehicles = new ArrayList<>();
+        for (int i = 0; i < years.size(); i += 1) {
+            json = consume.getData(address + years.get(i).code());
+            Vehicle vehicle = data.convert(json, Vehicle.class);
+            vehicles.add(vehicle);
+        }
+
+        vehicles.forEach(System.out::print);
+
 
 
     }
