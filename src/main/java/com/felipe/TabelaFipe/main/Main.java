@@ -71,29 +71,35 @@ public class Main {
                 .forEach(System.out::print);
 
 
-        int modelOption = reader.nextInt();
-        reader.nextLine();
+        System.out.println("Type a part of the car's name and press enter to start searching");
+        String modelOption = reader.nextLine();
 
-        List<Data> found = modelsList.models().stream()
-                .filter(m -> Integer.parseInt(m.code()) == modelOption)
+
+        List<Data> filteredModels = modelsList.models().stream()
+                .filter(m -> m.name().toLowerCase().contains(modelOption.toLowerCase()))
+                .sorted(Comparator.comparing(Data::codeAsInt))
                 .toList();
 
+        System.out.println("List of the models that match your search");
+        filteredModels.forEach(System.out::print);
 
+        System.out.println("Please choose the model by typing the code");
+        String modelCode = reader.nextLine();
 
-        address = address + found.get(0).code() + "/anos/";
+        address = address + modelCode + "/anos/";
         json = consume.getData(address);
         List<Data> years = data.convertList(json, Data.class);
 
-        ArrayList<Vehicle> vehicles = new ArrayList<>();
-        for (int i = 0; i < years.size(); i += 1) {
+        List<Vehicle> vehicles = new ArrayList<>();
+        for (int i = 0; i < years.size(); i += 1 ) {
             json = consume.getData(address + years.get(i).code());
             Vehicle vehicle = data.convert(json, Vehicle.class);
             vehicles.add(vehicle);
         }
 
-        vehicles.forEach(System.out::print);
-
-
-
+        System.out.println("Here is your list...");
+        vehicles.stream()
+                .sorted(Comparator.comparing(Vehicle::year))
+                .forEach(System.out::print);
     }
 }

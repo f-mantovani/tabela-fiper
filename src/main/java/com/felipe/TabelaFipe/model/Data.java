@@ -12,7 +12,9 @@ public record Data(@JsonAlias("nome") String name, @JsonAlias("codigo") String c
                 """.formatted(code(), name());
     }
 
-    public int codeAsInt () {
+    public int codeAsInt() {
         return Integer.parseInt(code());
     }
+
+
 }
